@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Letter Reaction Game</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #10c7ce;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        #top-bar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            box-sizing: border-box;
+            position: absolute;
+            top: 0;
+        }
+        #title {
+            font-size: 3vw;
+        }
+        #language-selector {
+            font-size: 1.5vw;
+        }
+        #game-container {
+            width: 95%;
+            height: 85%;
+            background-color: #8fced0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+            padding: 10px;
+            box-sizing: border-box;
+            margin-top: 60px;
+        }
+        #letter {
+            font-size: 20vw; /* 增大字体 */
+            font-weight: bold;
+            margin: 20px;
+        }
+        #score, #level {
+            font-size: 4vw;
+            margin-top: 10px;
+        }
+        #message {
+            font-size: 3vw;
+            color: red;
+            margin-top: 20px;
+            visibility: hidden;
+        }
+        #start-button {
+            font-size: 2vw;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="top-bar">
+        <h2><a target="_blank" href="https://sb-is-you.github.io/uray/home.html">Home</a></h2>
+        <div id="title"></div>
+        <select id="language-selector" tabindex="-1">
+            <option value="en">English</option>
+            <option value="zh-TW">繁體中文</option>
+            <option value="zh-CN">简体中文</option>
+            <option value="ja">日本語</option>
+            <option value="ko">한국어</option>
+        </select>
+    </div>
+    <div id="game-container">
+        <div id="letter"></div>
+        <div id="score"></div>
+        <div id="level"></div>
+        <div id="message"></div>
+        <button id="start-button"></button>
+    </div>
+
+    <script>
+        const translations = {
+            en: {
+                title: "Letter Reaction Game",
+                score: "Score: ",
+                level: "Level: ",
+                congratulation: "Congratulations! The game speed has increased!",
+                startButton: "Start Game",
+            },
+            "zh-TW": {
+                title: "字母反應遊戲",
+                score: "得分: ",
+                level: "關卡: ",
+                congratulation: "恭喜！遊戲速度加快！",
+                startButton: "開始遊戲",
+            },
+            "zh-CN": {
+                title: "字母反应游戏",
+                score: "得分: ",
+                level: "关卡: ",
+                congratulation: "恭喜！游戏速度加快！",
+                startButton: "开始游戏",
+            },
+            ja: {
+                title: "文字反応ゲーム",
+                score: "スコア: ",
+                level: "レベル: ",
+                congratulation: "おめでとうございます！ゲームの速度が上がりました！",
+                startButton: "ゲーム開始",
+            },
+            ko: {
+                title: "문자 반응 게임",
+                score: "점수: ",
+                level: "레벨: ",
+                congratulation: "축하합니다! 게임 속도가 증가했습니다!",
+                startButton: "게임 시작",
+            }
+        };
+
+        let currentLanguage = 'en'; // 默认语言
+        let score = 0;
+        let currentLevel = 1;
+
+        // 更新界面上的文本
+        function updateTexts() {
+            document.getElementById('title').textContent = translations[currentLanguage].title;
+            document.getElementById('score').textContent = translations[currentLanguage].score + score;
+            document.getElementById('level').textContent = translations[currentLanguage].level + currentLevel;
+            document.getElementById('message').textContent = translations[currentLanguage].congratulation;
+            document.getElementById('start-button').textContent = translations[currentLanguage].startButton;
+        }
+
+        // 语言选择事件监听
+        document.getElementById('language-selector').addEventListener('change', (event) => {
+            currentLanguage = event.target.value;
+            updateTexts();
+        });
+
+        // 初始化文本
+        updateTexts();
+
+        let gameStarted = false;
+        let timer;
+        let waitingForInput = false;
+        let baseTime = 3500; // 初始反应时间（3.5秒）
+        let nextLevel = 50; // 下一个加速的分数点
+
+        function getRandomLetter() {
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            return letters[Math.floor(Math.random() * letters.length)];
+        }
+
+        function updateLetter() {
+            currentLetter = getRandomLetter();
+            document.getElementById('letter').textContent = currentLetter;
+
+            waitingForInput = true;
+
+            timer = setTimeout(() => {
+                if (waitingForInput) {
+                    handleMiss();
+                }
+            }, baseTime);
+        }
+
+        function handleMiss() {
+            score--;
+            document.getElementById('score').textContent = translations[currentLanguage].score + score;
+            updateLetter();
+        }
+
+        // 开始按钮点击事件监听
+        document.getElementById('start-button').addEventListener('click', () => {
+            if (!gameStarted) {
+                gameStarted = true;
+                updateLetter();
+                document.getElementById('start-button').style.display = 'none'; // 隐藏按钮
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            // 如果焦点在语言选择器上，阻止默认行为
+            if (document.activeElement === document.getElementById('language-selector')) {
+                event.preventDefault();
+                return;
+            }
+
+            if (!gameStarted) return;
+
+            if (!waitingForInput) return;
+
+            const pressedKey = event.key.toUpperCase();
+
+            if (pressedKey === currentLetter) {
+                score++;
+                document.getElementById('score').textContent = translations[currentLanguage].score + score;
+                waitingForInput = false;
+                clearTimeout(timer);
+                updateLetter();
+
+                if (score >= nextLevel) {
+                    baseTime = Math.floor(baseTime / 1.2);
+                    currentLevel++;
+                    nextLevel += 50;
+                    document.getElementById('level').textContent = translations[currentLanguage].level + currentLevel;
+                    showMessage(translations[currentLanguage].congratulation);
+                }
+            } else {
+                score--;
+                document.getElementById('score').textContent = translations[currentLanguage].score + score;
+            }
+        });
+
+        function showMessage(text) {
+            const messageElement = document.getElementById('message');
+            messageElement.textContent = text;
+            messageElement.style.visibility = 'visible';
+
+            setTimeout(() => {
+                messageElement.style.visibility = 'hidden';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
