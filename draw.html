@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
     <body>
+        <title>Drawing Board</title>
         <div>
             <h1>Drawing Board</h1>
             <p3>Color:</p3>
@@ -8,6 +9,7 @@
             <p3>Brush Size:</p3>
             <input id="sz" type="number">
             <button onclick="cd.clearRect(0,0,c.width,c.height)">Clear All</button>
+            <button onclick="save()">Save</button>
         </div>
         <canvas id="cav" width="1000" height="500" style="border : 3px solid black">
         </canvas>
@@ -38,6 +40,12 @@
             };
             function end(){
                 isDraw = false;
+            };
+            function save(){
+                let link = document.createElement("a");
+                link.download = "my-drawing.png";
+                link.href = c.toDataURL("image/png");
+                link.click();
             }
             c.addEventListener("pointerdown", start);
             c.addEventListener("pointermove", draw);
